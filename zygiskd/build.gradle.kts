@@ -65,10 +65,19 @@ task("buildAndStrip") {
   doLast {
     val ndkPath = getLatestNDKPath()
 
-    val aarch64Compiler = Paths.get(ndkPath, "toolchains", "llvm", "prebuilt", "linux-x86_64", "bin", "aarch64-linux-android34-clang").toString()
-    val armv7aCompiler = Paths.get(ndkPath, "toolchains", "llvm", "prebuilt", "linux-x86_64", "bin", "armv7a-linux-androideabi34-clang").toString()
-    val x86Compiler = Paths.get(ndkPath, "toolchains", "llvm", "prebuilt", "linux-x86_64", "bin", "i686-linux-android34-clang").toString()
-    val x86_64Compiler = Paths.get(ndkPath, "toolchains", "llvm", "prebuilt", "linux-x86_64", "bin", "x86_64-linux-android34-clang").toString()
+    val os = OperatingSystem.current()
+    val hostTag = when {
+      os.isMacOsX -> "darwin-x86_64"
+      os.isWindows -> "windows-x86_64"
+      else -> "linux-x86_64"
+    }
+    val ext = if (os.isWindows) ".cmd" else ""
+
+    val binDir = Paths.get(ndkPath, "toolchains", "llvm", "prebuilt", hostTag, "bin")
+    val aarch64Compiler = binDir.resolve("aarch64-linux-android34-clang$ext").toString()
+    val armv7aCompiler = binDir.resolve("armv7a-linux-androideabi34-clang$ext").toString()
+    val x86Compiler = binDir.resolve("i686-linux-android34-clang$ext").toString()
+    val x86_64Compiler = binDir.resolve("x86_64-linux-android34-clang$ext").toString()
 
     if (!Paths.get(aarch64Compiler).toFile().exists()) {
       throw Exception("aarch64 compiler not found at $aarch64Compiler")
